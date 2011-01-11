@@ -1,0 +1,13 @@
+{
+  "name"          : "queryl",
+  "description"   : "Database query interface for node.js",
+  "url"           : "http://github.com/Flamefork/queryl",
+  "keywords"      : ["database", "sql"],
+  "author"        : "Ilia Ablamonov <ilia@flamefork.ru>",
+  "contributors"  : [],
+  "dependencies"  : {"eyes": ">=0.1.6"},
+  "main"          : "./lib/queryl",
+  "bin"           : {},
+  "directories"   : { "test": "./test" },
+  "version"       : "0.0.1"
+}
