@@ -13,7 +13,7 @@ See/try tests if you want to check progress.
     // select * from users where active = true and last_logged_in > '2010-12-01' and type in ('admin, 'moderator') and expires > now() limit 1
     table('users').
         where({active: true}).
-        where({'last_logged_in >': new Date(2010, 12, 1)}).
+        where('power > ?', 9000).
         where({type: ['admin', 'moderator']}).
         where('expires > now()').
         first(function (row) {});
@@ -33,7 +33,7 @@ See/try tests if you want to check progress.
         leftJoin(
             table('comments'),
             {id: 'user_id'}).
-        select('login', 'comments.text').
+        select('login', 'comments.text', {stat: table('stats').where({comment_id: 'comments.id'})}).
         limit(20, 20).
         all(function (rows) {});
     
