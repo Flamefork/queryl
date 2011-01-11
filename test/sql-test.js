@@ -94,6 +94,8 @@ function todo() {
         {id: 'user_id'}).
     select(
         'login',
-        {stat: table('stats').where({comment_id: 'comments.id'})},
-        'comments.text');
+        'comments.text',
+        {likes: table('stats').
+            select('counter').
+            where({comment_id: 'comments.id'})});
 }

@@ -10,7 +10,8 @@ See/try tests if you want to check progress.
 
 ## Usage examples (subject to change)
 
-    // select * from users where active = true and last_logged_in > '2010-12-01' and type in ('admin, 'moderator') and expires > now() limit 1
+    // select * from users where active = true and last_logged_in > '2010-12-01'
+    // and type in ('admin, 'moderator') and expires > now() limit 1
     table('users').
         where({active: true}).
         where('power > ?', 9000).
@@ -27,13 +28,20 @@ See/try tests if you want to check progress.
         select('login').
         all(function (rows) {});
     
-    // select users.login, comments.text from users left join comments on users.id = comments.user_id order by last_logged_in desc
+    // select users.login, comments.text, (select counter from stats where
+    // comment_id = comments.id) as likes from users left join comments on
+    // users.id = comments.user_id order by last_logged_in desc limit 20 offset 20
     Users.
         order('last_logged_in desc').
         leftJoin(
             table('comments'),
             {id: 'user_id'}).
-        select('login', 'comments.text', {stat: table('stats').where({comment_id: 'comments.id'})}).
+        select(
+            'login',
+            'comments.text',
+            {likes: table('stats').
+                select('likes').
+                where({comment_id: 'comments.id'})}).
         limit(20, 20).
         all(function (rows) {});
     
