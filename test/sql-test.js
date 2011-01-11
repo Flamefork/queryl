@@ -42,14 +42,36 @@ vows.describe('sql').addBatch({
                 sql: "select * from users where login = 'admin'"
             }),
             
-            'with in array condition': sqlVow({
+            'with array condition': sqlVow({
                 topic: function (table) { return table.where({login: ['admin', 'admin2']})},
                 sql: "select * from users where login in ('admin', 'admin2')"
+            }),
+            
+            'with numeric condition': sqlVow({
+                topic: function (table) { return table.where({power: 9000})},
+                sql: "select * from users where power = 9000"
+            }),
+            
+            'with date condition': sqlVow({
+                topic: function (table) {
+                    return table.where({createdAt: new Date('2010-12-01UTC')})},
+                sql: "select * from users where createdAt = '2010-12-01'"
+            }),
+            
+            'with quotes': sqlVow({
+                topic: function (table) {
+                    return table.where({login: "ha'ha'ha"})},
+                sql: "select * from users where login = 'ha\\'ha\\'ha'"
             }),
             
             'with selected column': sqlVow({
                 topic: function (table) { return table.select('login')},
                 sql: "select login from users"
+            }),
+            
+            'with ordering': sqlVow({
+                topic: function (table) { return table.order('login desc')},
+                sql: "select * from users order by login desc"
             })
         })
     }
@@ -66,10 +88,12 @@ function sqlVow(o) {
 }
 
 function todo() {
-    where({'last_logged_in >': new Date(2010, 12, 1)}).
-    order('last_logged_in desc').
+    where('power > ?', 9000).
     leftJoin(
         table('comments'),
         {id: 'user_id'}).
-    select('login', 'comments.text');
+    select(
+        'login',
+        {stat: table('stats').where({comment_id: 'comments.id'})},
+        'comments.text');
 }
