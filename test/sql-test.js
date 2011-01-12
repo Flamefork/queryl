@@ -37,6 +37,11 @@ vows.describe('sql').addBatch({
                 })
             }),
             
+            'with hash condition with null value': sqlVow({
+                topic: function (table) { return table.where({status: null})},
+                sql: "select * from users where status is null"
+            }),
+            
             'with string condition': sqlVow({
                 topic: function (table) { return table.where("login = 'admin'")},
                 sql: "select * from users where login = 'admin'"
