@@ -104,6 +104,11 @@ vows.describe('sql').addBatch({
                 })
             }),
             
+            'with subselect': sqlVow({
+                topic: function (table) { return table.select('login', sql.table('comments').where('user_id = users.id').select('count(*)').as('comment_count'))},
+                sql: "select login, (select count(*) from comments as comment_count where user_id = users.id) comment_count from users"
+            }),
+            
             'with left-joined \'comments\' table with hash condition': sqlVow({
                 topic: function (table) { return table.leftJoin(sql.table('comments'), {user_id: 'id'})},
                 sql: "select * from users left join comments on comments.user_id = users.id"
@@ -120,7 +125,11 @@ vows.describe('sql').addBatch({
                 as('superheroes').
                 select(
                     'login as codename',
-                    'speeches.count').
+                    'speeches.count',
+                    sql.table('kills').
+                        where('user_id = users.id').
+                        select('count(*)').
+                        as('kill_count')).
                 where({alive: true}).
                 where('power > ? and birthDate < ?', 9000, new Date('1900-01-01UTC')).
                 leftJoin(
@@ -136,7 +145,9 @@ vows.describe('sql').addBatch({
                 having({role: ['savior', 'enemy']}).
                 order('power desc').
                 limit(100),
-            sql: "select login as codename, speeches.count from users as superheroes " +
+            sql: "select login as codename, speeches.count, " +
+                 "(select count(*) from kills as kill_count where user_id = users.id) kill_count " +
+                 "from users as superheroes " +
                  "left join comments as speeches on speeches.user_id = superheroes.id, " +
                  "left join (select * from users as victims where alive = false) victims on victims.killed_by_id = superheroes.id " +
                  "where alive = true and power > 9000 and birthDate < '1900-01-01' " +
@@ -153,14 +164,4 @@ function sqlVow(o) {
         assert.equal(topic.toSql(), sql);
     };
     return o;
-}
-
-function todo() {
-    sql.table('users').
-        select(
-            'comments.text',
-            sql.table('stats').
-                select('counter').
-                where({comment_id: 'comments.id'}).
-                as('likes'));
 }
