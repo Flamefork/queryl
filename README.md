@@ -10,7 +10,7 @@ See/try tests if you want to check progress.
 
 ## Usage examples (subject to change)
 
-    // select * from users where active = true and last_logged_in > '2010-12-01'
+    // select * from users where active = true and power > 9000
     // and type in ('admin, 'moderator') and expires > now() limit 1
     table('users').
         where({active: true}).

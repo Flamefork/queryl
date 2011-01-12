@@ -42,6 +42,16 @@ vows.describe('sql').addBatch({
                 sql: "select * from users where login = 'admin'"
             }),
             
+            'with string interpolation condition': sqlVow({
+                topic: function (table) { return table.where('login = ? and power > ?', 'admin', 9000)},
+                sql: "select * from users where login = 'admin' and power > 9000"
+            }),
+            
+            'with escaped string interpolation condition': sqlVow({
+                topic: function (table) { return table.where("sign = '\\?' and login = ?", 'admin')},
+                sql: "select * from users where sign = '?' and login = 'admin'"
+            }),
+            
             'with array condition': sqlVow({
                 topic: function (table) { return table.where({login: ['admin', 'admin2']})},
                 sql: "select * from users where login in ('admin', 'admin2')"
@@ -88,14 +98,14 @@ function sqlVow(o) {
 }
 
 function todo() {
-    where('power > ?', 9000).
-    leftJoin(
-        table('comments'),
-        {id: 'user_id'}).
-    select(
-        'login',
-        'comments.text',
-        {likes: table('stats').
-            select('counter').
-            where({comment_id: 'comments.id'})});
+    sql.table('users').
+        leftJoin(
+            sql.table('comments'),
+            {id: 'user_id'}).
+        select(
+            'login',
+            'comments.text',
+            {likes: sql.table('stats').
+                select('counter').
+                where({comment_id: 'comments.id'})});
 }
