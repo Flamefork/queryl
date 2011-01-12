@@ -12,6 +12,11 @@ vows.describe('sql').addBatch({
             topic: sql.table('users'),
             sql: "select * from users",
             
+            'as \'superheroes\'': sqlVow({
+                topic: function (table) { return table.as('superheroes'); },
+                sql: "select * from users as superheroes"
+            }),
+            
             'with limit': sqlVow({
                 topic: function (table) { return table.limit(10); },
                 sql: "select * from users limit 10"
@@ -97,7 +102,45 @@ vows.describe('sql').addBatch({
                     topic: function (table) { return table.having({role: 'admin'})},
                     sql: "select * from users group by role having role = 'admin'"
                 })
+            }),
+            
+            'with left-joined \'comments\' table with hash condition': sqlVow({
+                topic: function (table) { return table.leftJoin(sql.table('comments'), {user_id: 'id'})},
+                sql: "select * from users left join comments on comments.user_id = users.id"
+            }),
+            
+            'with left-joined \'comments\' table with string condition': sqlVow({
+                topic: function (table) { return table.leftJoin(sql.table('comments'), 'comments.user_id = users.id')},
+                sql: "select * from users left join comments on comments.user_id = users.id"
             })
+        }),
+        
+        'when created for complex query': sqlVow({
+            topic: sql.table('users').
+                as('superheroes').
+                select(
+                    'login as codename',
+                    'speeches.count').
+                where({alive: true}).
+                where('power > ? and birthDate < ?', 9000, new Date('1900-01-01UTC')).
+                leftJoin(
+                    sql.table('comments').
+                        as('speeches'),
+                    {user_id: 'id'}).
+                leftJoin(
+                    sql.table('users').
+                        as('victims').
+                        where({alive: false}),
+                    {killed_by_id: 'id'}).
+                group('role').
+                having({role: ['savior', 'enemy']}).
+                order('power desc').
+                limit(100),
+            sql: "select login as codename, speeches.count from users as superheroes " +
+                 "left join comments as speeches on speeches.user_id = superheroes.id, " +
+                 "left join (select * from users as victims where alive = false) victims on victims.killed_by_id = superheroes.id " +
+                 "where alive = true and power > 9000 and birthDate < '1900-01-01' " +
+                 "group by role having role in ('savior', 'enemy') order by power desc limit 100"
         })
     }
 }).export(module);
@@ -114,13 +157,10 @@ function sqlVow(o) {
 
 function todo() {
     sql.table('users').
-        leftJoin(
-            sql.table('comments'),
-            {id: 'user_id'}).
         select(
-            'login',
             'comments.text',
-            {likes: sql.table('stats').
+            sql.table('stats').
                 select('counter').
-                where({comment_id: 'comments.id'})});
+                where({comment_id: 'comments.id'}).
+                as('likes'));
 }
