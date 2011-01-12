@@ -87,6 +87,16 @@ vows.describe('sql').addBatch({
             'with ordering': sqlVow({
                 topic: function (table) { return table.order('login desc')},
                 sql: "select * from users order by login desc"
+            }),
+            
+            'with grouping': sqlVow({
+                topic: function (table) { return table.group('role')},
+                sql: "select * from users group by role",
+                
+                'and having clause': sqlVow({
+                    topic: function (table) { return table.having({role: 'admin'})},
+                    sql: "select * from users group by role having role = 'admin'"
+                })
             })
         })
     }
